@@ -120,6 +120,26 @@ public class Product implements Serializable {
 				}
 		}
 
+		public void delete(){
+				if (dao != null){
+						dao.delete(id);
+				}
+		}
+
+		public Hashtable<String, String> getHashTable(){
+				Hashtable<String,String> data = new Hashtable<String, String>();
+
+				data.put("id",id);
+				data.put("name", name);
+				data.put("description", description);
+				data.put("price", price);
+				data.put("rating", Float.toString(rating));
+				data.put("imgResourceId", Integer.toString(imgResourceId));
+				data.put("quantity", Integer.toString(quantity));
+
+				return data;
+		}
+
 		public static ArrayList<Product> load(IProductDAO dao){
 				ArrayList<Product> products = new ArrayList<Product>();
 				if(dao != null){

@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class CartDBHelper extends SQLiteOpenHelper {
 		private static CartDBHelper mInstance = null;
-		public static final int DATABASE_VERSION = 2;
+		public static final int DATABASE_VERSION = 3;
 		public static final String DATABASE_NAME = "Cart.db";
 		public CartDBHelper(Context context){
 				super(context,DATABASE_NAME,null,DATABASE_VERSION);

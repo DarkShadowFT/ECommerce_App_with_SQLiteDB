@@ -14,6 +14,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.ActionMode;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,16 +25,19 @@ import android.widget.Filterable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements ProductAdapter.ProductItemClickListener {
 		private EditText search;
 		private Filterable filterable;
 		private ArrayList<Product> dataSet = new ArrayList<Product>();
+		ProductAdapter adp;
 		private ActivityResultLauncher<Intent> productDetailLauncher;
 		private ActivityResultLauncher<Intent> addNewProductLauncher;
 		private IProductDAO productDAO;
 		private IProductDAO cartDAO;
+		private Menu optionsMenu;
 
 		@Override
 		protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements ProductAdapter.Pr
 				cartDAO = new CartDAO(this);
 
 				// specify an adapter (see also next example)
-				ProductAdapter adp = new ProductAdapter(dataSet,this);
+				adp = new ProductAdapter(dataSet,this);
 				filterable = adp;
 				recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
 				recyclerView.setAdapter(adp);
@@ -121,6 +128,41 @@ public class MainActivity extends AppCompatActivity implements ProductAdapter.Pr
 				});
 		}
 
+		// action mode
+		private ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
+
+				public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+
+						MenuInflater inflater = mode.getMenuInflater();
+						inflater.inflate(R.menu.main_action, menu);
+						return true;
+				}
+
+				public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+						return false;
+				}
+
+				public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+						switch (item.getItemId()) {
+								case R.id.delete:
+
+										adp.removeSelectedItems();
+										mode.finish();
+										productDAO.emptyTable();
+										for (int i = 0; i < dataSet.size(); i++){
+												dataSet.get(i).save();
+										}
+										return true;
+								default:
+										return false;
+						}
+				}
+
+				public void onDestroyActionMode(ActionMode mode) {
+						adp.setMode(ProductAdapter.DEFAULT_MODE);
+				}
+		};
+
 		@Override
 		public void onClick(Product product) {
 				Intent intent = new Intent(this, ProductDetailActivity.class);
@@ -133,6 +175,11 @@ public class MainActivity extends AppCompatActivity implements ProductAdapter.Pr
 				productDetailLauncher.launch(intent);
 		}
 
+		public void onLongClick(Product product) {
+				this.startActionMode(actionModeCallback);
+				adp.setMode(ProductAdapter.SELECTABLE_MODE);
+		}
+
 		public void addNewProduct(){
 				Intent intent = new Intent(this, AddProductActivity.class);
 				addNewProductLauncher.launch(intent);
@@ -141,5 +188,16 @@ public class MainActivity extends AppCompatActivity implements ProductAdapter.Pr
 		public void onSaveInstanceState(Bundle state) {
 				super.onSaveInstanceState(state);
 				state.putSerializable("products",dataSet);
+		}
+
+		public boolean onCreateOptionsMenu(Menu menu) {
+				MenuInflater inflater = getMenuInflater();
+				inflater.inflate(R.menu.main,menu);
+				optionsMenu = menu;
+				return super.onCreateOptionsMenu(menu);
+		}
+
+		public boolean onOptionsItemSelected(MenuItem item) {
+				return super.onOptionsItemSelected(item);
 		}
 }

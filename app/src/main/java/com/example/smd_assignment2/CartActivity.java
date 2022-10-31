@@ -127,17 +127,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartI
 		}
 
 		public void addToCart(){
-				cartDAO.emptyTable();
-
-				if (dataSet.size() == 0){
-						Hashtable<String, String> data = new Hashtable<>();
-						cartDAO.save(data);
-				}
-				else {
-						for (int i = 0; i < dataSet.size(); i++){
-								dataSet.get(i).setDao(cartDAO);
-								dataSet.get(i).save();
-						}
+				for (int i = 0; i < dataSet.size(); i++){
+						dataSet.get(i).setDao(cartDAO);
+						dataSet.get(i).save();
 				}
 				Intent intent = new Intent();
 				setResult(RESULT_OK, intent);
@@ -172,7 +164,8 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.CartI
 								calculateTotal();
 						}
 						else {
-//								cartData.remove(dataSet.get(index).getId());
+								dataSet.get(index).setDao(cartDAO);
+								dataSet.get(index).delete();
 								dataSet.remove(index);
 								adapter.notifyDataSetChanged();
 								calculateTotal();

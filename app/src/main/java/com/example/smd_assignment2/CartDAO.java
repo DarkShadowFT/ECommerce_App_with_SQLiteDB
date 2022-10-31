@@ -110,4 +110,19 @@ public class CartDAO implements IProductDAO {
 				long rows = db.delete("Cart", "", null);
 				System.out.println("Number of rows deleted: " + rows);
 		}
+
+		@Override
+		public void delete(String id){
+				CartDBHelper dbHelper = CartDBHelper.getInstance(context);
+				SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+				ArrayList<Hashtable<String, String>> results = load();
+
+				// on below line we are calling a method to delete our
+				// course and we are comparing it with our course name.
+				long rows = db.delete("Cart", "id=?", new String[]{id});
+				System.out.println("Number of rows deleted: " + rows);
+				db.close();
+
+		}
 }

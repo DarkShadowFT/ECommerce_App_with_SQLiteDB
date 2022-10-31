@@ -109,4 +109,15 @@ public class ProductDAO implements IProductDAO {
 				long rows = db.delete("Products", "", null);
 				System.out.println("Number of rows deleted: " + rows);
 		}
+
+		@Override
+		public void delete(String id){
+				ProductDBHelper dbHelper = ProductDBHelper.getInstance(context);
+				SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+				String[] arguments = new String[1];
+				arguments[0] = id;
+				long rows = db.delete("Products", "id = ?", arguments);
+				System.out.println("Number of rows deleted: " + rows);
+		}
 }

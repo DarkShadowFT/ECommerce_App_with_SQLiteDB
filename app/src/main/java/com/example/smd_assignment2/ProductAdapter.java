@@ -3,6 +3,7 @@ package com.example.smd_assignment2;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
@@ -18,13 +19,19 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 		private ArrayList<Product> products;
 		private ArrayList<Product> filteredProducts;
 		private ProductItemClickListener listener;
+		private ArrayList<Integer> selectedItems;
 		private Filter filter;
+
+		private int mode = DEFAULT_MODE;
+		public static final int DEFAULT_MODE = 0;
+		public static final int SELECTABLE_MODE = 1;
 
 		public class ProductViewHolder extends RecyclerView.ViewHolder {
 				public ImageView image;
 				public TextView name;
 				public RatingBar simpleRatingBar;
 				public TextView price;
+				public CheckBox selected;
 
 				public ProductViewHolder(View v){
 						super(v);
@@ -32,12 +39,43 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 						name = (TextView) v.findViewById(R.id.product_name);
 						simpleRatingBar = (RatingBar) v.findViewById(R.id.ratingBar);
 						price = (TextView) v.findViewById(R.id.product_price);
+						selected = (CheckBox) v.findViewById(R.id.item_check);
 
 						v.setOnClickListener(new View.OnClickListener() {
 								@Override
 								public void onClick(View view) {
 										int index = (int) v.getTag();
-										listener.onClick(filteredProducts.get(index));
+										if (mode == SELECTABLE_MODE){
+												selected.setChecked(!selected.isChecked()); // toggle
+												selected.callOnClick();
+										}
+										else {
+												listener.onClick(filteredProducts.get(index));
+										}
+								}
+						});
+
+						v.setOnLongClickListener(new View.OnLongClickListener() {
+								@Override
+								public boolean onLongClick(View v) {
+										int index = (int) v.getTag();
+										selected.setChecked(true);
+										selected.callOnClick();
+										listener.onLongClick(filteredProducts.get(index));
+										return true;
+								}
+						});
+						selected.setOnClickListener(new View.OnClickListener() {
+								@Override
+								public void onClick(View view) {
+										boolean checked = ((CheckBox) view).isChecked();
+										int index = (int) v.getTag();
+										if (checked){
+												selectedItems.add(index);
+										}
+										else{
+												selectedItems.remove(index);
+										}
 								}
 						});
 				}
@@ -47,6 +85,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 				this.products = ds;
 				this.filteredProducts = ds;
 				this.listener = ls;
+				selectedItems = new ArrayList<>();
 		}
 
 		@Override
@@ -63,6 +102,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 				holder.simpleRatingBar.setRating(product.getRating());
 				holder.price.setText(product.getPrice());
 				holder.itemView.setTag(position);
+				if (mode == DEFAULT_MODE){
+						holder.selected.setChecked(false);
+						holder.selected.setVisibility(View.INVISIBLE);
+				}
+				else{
+						holder.selected.setVisibility(View.VISIBLE);
+				}
 		}
 
 		@Override
@@ -72,6 +118,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
 		public interface ProductItemClickListener {
 				void onClick(Product p);
+				void onLongClick(Product p);
+
 		}
 
 		@Override
@@ -114,5 +162,29 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 						filteredProducts = (ArrayList<Product>) filterResults.values;
 						notifyDataSetChanged();
 				}
+		}
+
+		public void setMode(int m){
+				mode = m;
+				if (mode == DEFAULT_MODE) {
+						selectedItems.clear();
+				}
+				notifyDataSetChanged();
+		}
+
+		public void removeSelectedItems(){
+				ArrayList<Product> removableItems = new ArrayList<>();
+				for (int i=0; i < selectedItems.size(); i++ ){
+						Integer item = selectedItems.get(i);
+						removableItems.add( filteredProducts.get(item) );
+				}
+
+				for(Product product : removableItems){
+						filteredProducts.remove(product);
+						products.remove(product);
+				}
+
+				selectedItems.clear();
+				notifyDataSetChanged();
 		}
 }

@@ -9,4 +9,5 @@ public interface IProductDAO {
 		public ArrayList<Hashtable<String,String>> load();
 		public Hashtable<String,String> load(String id);
 		public void emptyTable();
+		public void delete(String id);
 }
